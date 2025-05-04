@@ -1,4 +1,3 @@
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import streamlit as st
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -14,13 +13,13 @@ hatlar = {
     "T1": ["Yenimahalle", "İvedik", "Yunus Emre", "TRT Seyir", "Şentepe"]
 }
 
-# Graf yapısı
+# Graph yapısı
 G = nx.Graph()
 for hat in hatlar.values():
     for i in range(len(hat) - 1):
         G.add_edge(hat[i], hat[i + 1])
 
-# Sabit pozisyonlar
+# Sabit konum
 def sabit_konumlar_sutun(hatlar_dict):
     pos = {}
     x_step = 5
@@ -41,29 +40,26 @@ def en_kisa_yol(graf, kaynak, hedef):
     except nx.NetworkXNoPath:
         return None, None
 
-# Streamlit arayüzü
-st.title("🚇 Ankara Metro Haritası ve Rota Hesaplayıcı")
+# Streamlit Arayüzü
+st.title("Ankara Metro Rota ve Harita Uygulaması")
 
 duraklar = sorted(G.nodes())
 kaynak = st.selectbox("Başlangıç Durağı", duraklar)
 hedef = st.selectbox("Varış Durağı", duraklar)
 
-if st.button("En Kısa Rota Hesapla"):
+if st.button("Rota Göster"):
     yol, uzunluk = en_kisa_yol(G, kaynak, hedef)
     if yol:
-        st.success(f"➡️ {kaynak} → {hedef} ({uzunluk} durak / yaklaşık {uzunluk*2} dakika)")
-        st.write(" → ".join(yol))
-
-        fig, ax = plt.subplots(figsize=(16, 10))
+        st.success(f"{kaynak} → {hedef} arası en kısa yol ({uzunluk} durak / yaklaşık {uzunluk * 2} dk):")
+        st.markdown(" → ".join(yol))
+        
+        # Harita çizimi
         pos = sabit_konumlar_sutun(hatlar)
-        nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=1000, edge_color='gray', font_size=8, ax=ax)
-
-        # Yol vurgulama
+        fig, ax = plt.subplots(figsize=(15, 10))
+        nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=9, ax=ax)
         path_edges = list(zip(yol[:-1], yol[1:]))
         nx.draw_networkx_nodes(G, pos, nodelist=yol, node_color='orange', ax=ax)
         nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='red', width=3, ax=ax)
-
         st.pyplot(fig)
     else:
-        st.error("🚫 İki durak arasında yol bulunamadı.")
-
+        st.error(f"{kaynak} → {hedef} arasında yol bulunamadı.")
