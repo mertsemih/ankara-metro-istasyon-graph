@@ -54,4 +54,4 @@ Bu proje MIT lisansı altında lisanslanmıştır. Daha fazla bilgi için `LICEN
 
 ## İletişim
 
-Mert Semih - [GitHub](https://github.com/mertsemih) 
+Mert Semih SARIYERLİ - [GitHub](https://github.com/mertsemih) - semihmertsariyerli.06@gmail.com
