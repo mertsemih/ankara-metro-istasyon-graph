@@ -1,7 +1,7 @@
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import streamlit as st
 import networkx as nx
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Metro hatları
 hatlar = {
@@ -14,13 +14,13 @@ hatlar = {
     "T1": ["Yenimahalle", "İvedik", "Yunus Emre", "TRT Seyir", "Şentepe"]
 }
 
-# Graf oluştur
+# Graf yapısı
 G = nx.Graph()
 for hat in hatlar.values():
     for i in range(len(hat) - 1):
         G.add_edge(hat[i], hat[i + 1])
 
-# Sabit konumlar
+# Sabit pozisyonlar
 def sabit_konumlar_sutun(hatlar_dict):
     pos = {}
     x_step = 5
@@ -33,7 +33,7 @@ def sabit_konumlar_sutun(hatlar_dict):
         x += x_step
     return pos
 
-# En kısa yol
+# En kısa yolu bul
 def en_kisa_yol(graf, kaynak, hedef):
     try:
         yol = nx.shortest_path(graf, source=kaynak, target=hedef)
@@ -41,47 +41,29 @@ def en_kisa_yol(graf, kaynak, hedef):
     except nx.NetworkXNoPath:
         return None, None
 
-# Başlık
-st.set_page_config(layout="wide")
-st.title("🚇 Ankara Metro Rota ve Harita Uygulaması")
+# Streamlit arayüzü
+st.title("🚇 Ankara Metro Haritası ve Rota Hesaplayıcı")
 
-# Durak seçimi
-cols = st.columns(2)
-with cols[0]:
-    kaynak = st.selectbox("Başlangıç Durağı", sorted(G.nodes()))
-with cols[1]:
-    hedef = st.selectbox("Varış Durağı", sorted(G.nodes()))
+duraklar = sorted(G.nodes())
+kaynak = st.selectbox("Başlangıç Durağı", duraklar)
+hedef = st.selectbox("Varış Durağı", duraklar)
 
-# Rota Göster
-if st.button("Rota Göster"):
+if st.button("En Kısa Rota Hesapla"):
     yol, uzunluk = en_kisa_yol(G, kaynak, hedef)
     if yol:
-        st.success(f"{kaynak} → {hedef} arası {uzunluk} durak ({uzunluk * 2} dakika)")
-        st.markdown(" → ".join(yol))
-    else:
-        st.error("Yol bulunamadı.")
-    
-    # Harita çizimi
-    pos = sabit_konumlar_sutun(hatlar)
-    fig, ax = plt.subplots(figsize=(18, 10))
-    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=9, ax=ax)
+        st.success(f"➡️ {kaynak} → {hedef} ({uzunluk} durak / yaklaşık {uzunluk*2} dakika)")
+        st.write(" → ".join(yol))
 
-    if yol:
+        fig, ax = plt.subplots(figsize=(16, 10))
+        pos = sabit_konumlar_sutun(hatlar)
+        nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=1000, edge_color='gray', font_size=8, ax=ax)
+
+        # Yol vurgulama
         path_edges = list(zip(yol[:-1], yol[1:]))
         nx.draw_networkx_nodes(G, pos, nodelist=yol, node_color='orange', ax=ax)
         nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='red', width=3, ax=ax)
 
-    st.pyplot(fig)
+        st.pyplot(fig)
+    else:
+        st.error("🚫 İki durak arasında yol bulunamadı.")
 
-# Komşuluk analizi
-st.header("📊 Durakların Komşu Sayısı")
-komsular = {node: len(list(G.neighbors(node))) for node in G.nodes()}
-sorted_komsular = dict(sorted(komsular.items(), key=lambda item: item[1], reverse=True))
-
-fig2, ax2 = plt.subplots(figsize=(18, 6))
-ax2.bar(sorted_komsular.keys(), sorted_komsular.values(), color='skyblue')
-ax2.set_ylabel("Komşu Sayısı")
-ax2.set_xlabel("Durak")
-ax2.set_title("Her Durağın Komşu Sayısı")
-plt.xticks(rotation=90)
-st.pyplot(fig2)
