@@ -6,6 +6,17 @@ Bu proje, Ankara metrosunun istasyonlarını ve hatlarını graph veri yapısı 
 
 Bu proje, Ankara metrosunun istasyonlarını ve hatlarını graph veri yapısı kullanarak modelleyen ve analiz eden bir çalışmadır. Projede, metro istasyonları graph'ın düğümlerini (nodes), metro hatları ise graph'ın kenarlarını (edges) temsil etmektedir.
 
+## Ekran Görüntüleri
+
+### Metro Ağı Görselleştirmesi
+![Metro Ağı](C:/Users/semih/jupytericin/images/metro_network.jpg)
+
+### En Kısa Yol Analizi
+![En Kısa Yol](C:/Users/semih/jupytericin/images/shortest_path.jpg)
+
+### İstasyon Bağlantı Analizi
+![Bağlantı Analizi](C:/Users/semih/jupytericin/images/connection_analysis.jpg)
+
 ## Özellikler
 
 - Metro istasyonlarının graph veri yapısında modellenmesi
@@ -55,4 +66,12 @@ Bu proje MIT lisansı altında lisanslanmıştır. Daha fazla bilgi için `LICEN
 
 Mert Semih - [GitHub](https://github.com/mertsemih)
 
-Proje Linki: [https://github.com/mertsemih/ankara-metro-projesi-graph](https://github.com/mertsemih/ankara-metro-projesi-graph) 
+Proje Linki: [https://github.com/mertsemih/ankara-metro-projesi-graph](https://github.com/mertsemih/ankara-metro-projesi-graph)
+
+```python
+import matplotlib.pyplot as plt
+
+plt.savefig('images/metro_network.png')
+plt.savefig('images/shortest_path.png')
+plt.savefig('images/connection_analysis.png')
+``` 
