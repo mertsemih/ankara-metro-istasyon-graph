@@ -13,6 +13,15 @@ hatlar = {
     "T1": ["Yenimahalle", "Yunus Emre", "TRT Seyir", "Şentepe"]
 }
 
+renkler = {
+    "A1": "green",
+    "M1": "blue",
+    "M2": "orange",
+    "M3": "purple",
+    "M4": "red",
+    "BAŞKENTRAY": "gray",
+    "T1": "gold"
+}
 
 # Graph yapısı
 G = nx.Graph()
@@ -33,7 +42,7 @@ def sabit_konumlar_sutun(hatlar_dict):
         x += x_step
     return pos
 
-# En kısa yolu bul
+# En kısa yol
 def en_kisa_yol(graf, kaynak, hedef):
     try:
         yol = nx.shortest_path(graf, source=kaynak, target=hedef)
@@ -41,7 +50,20 @@ def en_kisa_yol(graf, kaynak, hedef):
     except nx.NetworkXNoPath:
         return None, None
 
-# Streamlit Arayüzü
+# Kullanılan hatları bul
+def kullanilan_hatlari_bul(yol):
+    kullanilan_hatlar = set()
+    for i in range(len(yol) - 1):
+        d1, d2 = yol[i], yol[i+1]
+        for hat_adi, duraklar in hatlar.items():
+            if d1 in duraklar and d2 in duraklar:
+                idx1 = duraklar.index(d1)
+                idx2 = duraklar.index(d2)
+                if abs(idx1 - idx2) == 1:
+                    kullanilan_hatlar.add(hat_adi)
+    return kullanilan_hatlar
+
+# Uygulama başlığı
 st.title("Ankara Metro Rota ve Harita Uygulaması")
 
 duraklar = sorted(G.nodes())
@@ -53,14 +75,29 @@ if st.button("Rota Göster"):
     if yol:
         st.success(f"{kaynak} → {hedef} arası en kısa yol ({uzunluk} durak / yaklaşık {uzunluk * 2} dk):")
         st.markdown(" → ".join(yol))
-        
+
+        # 🔁 Kullanılan hatları bul ve yaz
+        kullanilan = kullanilan_hatlari_bul(yol)
+        if kullanilan:
+            renkli = [f"<span style='color:{renkler[h]}; font-weight:bold'>{h}</span>" for h in kullanilan]
+            st.markdown("🛤 Kullanılan Hatlar: " + ", ".join(renkli), unsafe_allow_html=True)
+
         # Harita çizimi
         pos = sabit_konumlar_sutun(hatlar)
         fig, ax = plt.subplots(figsize=(15, 10))
-        nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=9, ax=ax)
+
+        # 🎨 Tüm hatları renkli çiz
+        for hat_adi, duraklar in hatlar.items():
+            edges = [(duraklar[i], duraklar[i + 1]) for i in range(len(duraklar) - 1)]
+            nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=renkler[hat_adi], width=2, ax=ax)
+
+        # 🟠 Yol çizimi
         path_edges = list(zip(yol[:-1], yol[1:]))
-        nx.draw_networkx_nodes(G, pos, nodelist=yol, node_color='orange', ax=ax)
+        nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=1000, ax=ax)
         nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='red', width=3, ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=yol, node_color='orange', ax=ax)
+        nx.draw_networkx_labels(G, pos, font_size=9, ax=ax)
+
         st.pyplot(fig)
     else:
         st.error(f"{kaynak} → {hedef} arasında yol bulunamadı.")
