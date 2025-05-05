@@ -73,7 +73,7 @@ hedef = st.selectbox("Varış Durağı", duraklar)
 if st.button("Rota Göster"):
     yol, uzunluk = en_kisa_yol(G, kaynak, hedef)
     if yol:
-        st.success(f"{kaynak} → {hedef} arası en kısa yol ({uzunluk} durak / yaklaşık {uzunluk * 2} dk):")
+        st.success(f"{kaynak} → {hedef} arası en kısa yol ({uzunluk} durak / yaklaşık {uzunluk * 2.5} dk):")
         st.markdown(" → ".join(yol))
 
         # 🔁 Kullanılan hatları bul ve yaz
